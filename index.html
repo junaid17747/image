@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Image Compressor</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 12px; }
+    h2 { margin-bottom: 10px; }
+    input, button { margin-top: 5px; }
+    #status { white-space: pre-wrap; margin-top: 10px; }
+    a { display: block; margin-top: 3px; color: blue; text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<h2>Mobile Image Compressor</h2>
+
+<label>
+  Pick images:
+  <input id="inputFiles" type="file" accept="image/*" multiple />
+</label>
+
+<div style="margin-top:10px;">
+  <label>Quality (0.1 - 1.0): 
+    <input id="quality" type="range" min="0.1" max="1" step="0.05" value="0.6"/>
+  </label>
+  <span id="qLabel">0.60</span>
+</div>
+
+<div style="margin-top:8px;">
+  <label>Max width/height (px): 
+    <input id="maxDim" type="number" value="800" min="100" step="50"/>
+  </label>
+</div>
+
+<div style="margin-top:10px;">
+  <button id="compressBtn">Compress Selected</button>
+</div>
+
+<div id="status"></div>
+
+<!-- Load library first -->
+<script src="https://unpkg.com/browser-image-compression@1.0.15/dist/browser-image-compression.js"></script>
+
+<script>
+  const input = document.getElementById('inputFiles');
+  const compressBtn = document.getElementById('compressBtn');
+  const status = document.getElementById('status');
+  const qSlider = document.getElementById('quality');
+  const qLabel = document.getElementById('qLabel');
+  const maxDim = document.getElementById('maxDim');
+
+  qSlider.addEventListener('input', () => qLabel.textContent = Number(qSlider.value).toFixed(2));
+
+  compressBtn.addEventListener('click', async () => {
+    if (typeof imageCompression !== 'function') {
+      status.textContent = "Error: imageCompression library not loaded!";
+      return;
+    }
+
+    const files = input.files;
+    if (!files || files.length === 0) {
+      status.textContent = 'No files selected.';
+      return;
+    }
+
+    status.textContent = 'Compressing...';
+    const results = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const options = {
+        maxWidthOrHeight: Number(maxDim.value) || 800,
+        initialQuality: Number(qSlider.value) || 0.6,
+        useWebWorker: true
+      };
+
+      try {
+        const compressedFile = await imageCompression(file, options);
+        const url = URL.createObjectURL(compressedFile);
+        const a = document.createElement('a');
+        a.href = url;
+        const baseName = file.name.replace(/\.[^.]+$/, '');
+        a.download = `compressed_${baseName}.jpg`;
+        a.textContent = `Download: ${a.download}`;
+        status.appendChild(a);
+        results.push({ orig: file.size, comp: compressedFile.size });
+      } catch (err) {
+        status.textContent += `Error compressing ${file.name}: ${err}\n`;
+      }
+    }
+
+    results.forEach((r, idx) => {
+      status.innerHTML += `File ${idx+1}: ${(r.orig/1024).toFixed(1)} KB → ${(r.comp/1024).toFixed(1)} KB\n`;
+    });
+  });
+</script>
+
+</body>
+</html>
