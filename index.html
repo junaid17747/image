@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mobile Image Compressor</title>
-  <style>
-    body { font-family: system-ui, sans-serif; padding: 12px; }
-    h2 { margin-bottom: 10px; }
-    input, button { margin-top: 5px; }
-    #status { white-space: pre-wrap; margin-top: 10px; }
-    a { display: block; margin-top: 3px; color: blue; text-decoration: underline; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile Image Compressor</title>
+<style>
+  body { font-family: system-ui, sans-serif; padding: 12px; }
+  h2 { margin-bottom: 10px; }
+  input, button { margin-top: 5px; }
+  #status { white-space: pre-wrap; margin-top: 10px; }
+  a { display: block; margin-top: 3px; color: blue; text-decoration: underline; }
+</style>
 </head>
 <body>
 
@@ -41,58 +41,56 @@
 <div id="status"></div>
 
 <!-- Load library first -->
-<script src="https://unpkg.com/browser-image-compression@1.0.15/dist/browser-image-compression.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@1.0.15/dist/browser-image-compression.js"></script>
 
 <script>
-  const input = document.getElementById('inputFiles');
-  const compressBtn = document.getElementById('compressBtn');
-  const status = document.getElementById('status');
-  const qSlider = document.getElementById('quality');
-  const qLabel = document.getElementById('qLabel');
-  const maxDim = document.getElementById('maxDim');
-
-  qSlider.addEventListener('input', () => qLabel.textContent = Number(qSlider.value).toFixed(2));
-
-  compressBtn.addEventListener('click', async () => {
+  // wait for DOM and library to load
+  window.addEventListener('DOMContentLoaded', () => {
     if (typeof imageCompression !== 'function') {
-      status.textContent = "Error: imageCompression library not loaded!";
+      document.getElementById('status').textContent = "Error: imageCompression library not loaded!";
       return;
     }
 
-    const files = input.files;
-    if (!files || files.length === 0) {
-      status.textContent = 'No files selected.';
-      return;
-    }
+    const input = document.getElementById('inputFiles');
+    const compressBtn = document.getElementById('compressBtn');
+    const status = document.getElementById('status');
+    const qSlider = document.getElementById('quality');
+    const qLabel = document.getElementById('qLabel');
+    const maxDim = document.getElementById('maxDim');
 
-    status.textContent = 'Compressing...';
-    const results = [];
+    qSlider.addEventListener('input', () => qLabel.textContent = Number(qSlider.value).toFixed(2));
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const options = {
-        maxWidthOrHeight: Number(maxDim.value) || 800,
-        initialQuality: Number(qSlider.value) || 0.6,
-        useWebWorker: true
-      };
-
-      try {
-        const compressedFile = await imageCompression(file, options);
-        const url = URL.createObjectURL(compressedFile);
-        const a = document.createElement('a');
-        a.href = url;
-        const baseName = file.name.replace(/\.[^.]+$/, '');
-        a.download = `compressed_${baseName}.jpg`;
-        a.textContent = `Download: ${a.download}`;
-        status.appendChild(a);
-        results.push({ orig: file.size, comp: compressedFile.size });
-      } catch (err) {
-        status.textContent += `Error compressing ${file.name}: ${err}\n`;
+    compressBtn.addEventListener('click', async () => {
+      const files = input.files;
+      if (!files || files.length === 0) {
+        status.textContent = 'No files selected.';
+        return;
       }
-    }
 
-    results.forEach((r, idx) => {
-      status.innerHTML += `File ${idx+1}: ${(r.orig/1024).toFixed(1)} KB → ${(r.comp/1024).toFixed(1)} KB\n`;
+      status.textContent = 'Compressing...';
+      status.innerHTML = '';
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const options = {
+          maxWidthOrHeight: Number(maxDim.value) || 800,
+          initialQuality: Number(qSlider.value) || 0.6,
+          useWebWorker: true
+        };
+
+        try {
+          const compressedFile = await imageCompression(file, options);
+          const url = URL.createObjectURL(compressedFile);
+          const a = document.createElement('a');
+          a.href = url;
+          const baseName = file.name.replace(/\.[^.]+$/, '');
+          a.download = `compressed_${baseName}.jpg`;
+          a.textContent = `Download: ${a.download}`;
+          status.appendChild(a);
+          status.innerHTML += `Original: ${(file.size/1024).toFixed(1)} KB → Compressed: ${(compressedFile.size/1024).toFixed(1)} KB\n\n`;
+        } catch (err) {
+          status.innerHTML += `Error compressing ${file.name}: ${err}\n`;
+        }
+      }
     });
   });
 </script>
