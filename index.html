@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mobile Image Compressor</title>
 <style>
-  /* Base styles */
   body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     margin: 0;
@@ -15,19 +14,17 @@
     line-height: 1.5;
   }
 
-  /* Heading */
   h2 {
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     font-size: 1.5rem;
     font-weight: 600;
     color: #1f2937;
   }
 
-  /* Inputs and labels */
   label {
     display: block;
-    margin-top: 12px;
-    font-size: 0.95rem;
+    margin-bottom: 12px;
+    font-size: 1rem;
     font-weight: 500;
   }
 
@@ -36,27 +33,25 @@
   input[type="number"] {
     margin-top: 6px;
     width: 100%;
-    max-width: 300px;
-    padding: 6px;
-    font-size: 0.95rem;
+    padding: 10px;
+    font-size: 1rem;
     border: 1px solid #d1d5db;
     border-radius: 8px;
     background: #fff;
   }
 
-  /* Range slider */
   input[type="range"] {
-    height: 6px;
+    height: 8px;
     cursor: pointer;
-    accent-color: #2563eb; /* modern browsers */
+    accent-color: #2563eb;
   }
 
-  /* Button */
   button {
-    display: inline-block;
-    margin-top: 14px;
-    padding: 10px 18px;
-    font-size: 1rem;
+    display: block;
+    width: 100%;
+    margin-top: 18px;
+    padding: 14px;
+    font-size: 1.1rem;
     font-weight: 600;
     color: #fff;
     background: #2563eb;
@@ -70,30 +65,48 @@
     background: #1e40af;
   }
 
-  /* Status section */
   #status {
-    margin-top: 18px;
-    font-size: 0.9rem;
+    margin-top: 20px;
+    font-size: 0.95rem;
     background: #f3f4f6;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
-    padding: 12px;
-    min-height: 60px;
+    padding: 14px;
+    min-height: 70px;
     white-space: pre-wrap;
     overflow-x: auto;
   }
 
-  /* Download links */
   #status a {
     display: block;
-    margin-top: 6px;
+    margin-top: 8px;
     color: #2563eb;
     font-weight: 500;
     text-decoration: none;
+    word-break: break-word;
   }
 
   #status a:hover {
     text-decoration: underline;
+  }
+
+  /* 🔹 Responsive adjustments */
+  @media (max-width: 480px) {
+    body {
+      padding: 12px;
+    }
+    h2 {
+      font-size: 1.3rem;
+    }
+    button {
+      font-size: 1rem;
+      padding: 12px;
+    }
+    input[type="file"],
+    input[type="number"] {
+      font-size: 0.95rem;
+      padding: 8px;
+    }
   }
 </style>
 </head>
@@ -106,30 +119,25 @@
   <input id="inputFiles" type="file" accept="image/*" multiple />
 </label>
 
-<div style="margin-top:10px;">
-  <label>Quality (0.1 - 1.0): 
-    <input id="quality" type="range" min="0.1" max="1" step="0.05" value="0.6"/>
-  </label>
+<label>
+  Quality (0.1 - 1.0): 
+  <input id="quality" type="range" min="0.1" max="1" step="0.05" value="0.6"/>
   <span id="qLabel">0.60</span>
-</div>
+</label>
 
-<div style="margin-top:8px;">
-  <label>Max width/height (px): 
-    <input id="maxDim" type="number" value="800" min="100" step="50"/>
-  </label>
-</div>
+<label>
+  Max width/height (px): 
+  <input id="maxDim" type="number" value="800" min="100" step="50"/>
+</label>
 
-<div style="margin-top:10px;">
-  <button id="compressBtn">Compress Selected</button>
-</div>
+<button id="compressBtn">Compress Selected</button>
 
 <div id="status"></div>
 
-<!-- Load library first -->
+<!-- Load library -->
 <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@1.0.15/dist/browser-image-compression.js"></script>
 
 <script>
-  // wait for DOM and library to load
   window.addEventListener('DOMContentLoaded', () => {
     if (typeof imageCompression !== 'function') {
       document.getElementById('status').textContent = "Error: imageCompression library not loaded!";
